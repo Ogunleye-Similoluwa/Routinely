@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:habit_speed_code/services/analytics_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:table_calendar/table_calendar.dart';
 
 class Habitspage extends StatefulWidget {
   final List<Map<String, dynamic>> habits;
@@ -430,19 +432,195 @@ class _HabitspageState extends State<Habitspage> with SingleTickerProviderStateM
   }
 
   Widget _buildMonthlyView() {
+    final insights = AnalyticsService.generateInsights(widget.habits);
+    
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildInsightCard(
-            title: "Monthly Goal",
-            value: "85% Complete",
-            icon: Icons.flag,
-            color: Colors.green,
-          ),
-          const SizedBox(height: 16),
-          _buildCompletionChart(widget.habits),
+          _buildInsightsSummary(insights),
+          const SizedBox(height: 24),
+          _buildCategoryBreakdown(insights['categoryBreakdown']),
+          const SizedBox(height: 24),
+          _buildCompletionCalendar(),
+          const SizedBox(height: 24),
+          _buildTrendAnalysis(insights['completionTrends']),
         ],
+      ),
+    );
+  }
+
+  Widget _buildInsightsSummary(Map<String, dynamic> insights) {
+    final streakData = insights['streakData'] as Map<String, dynamic>? ?? {
+      'currentStreak': 0,
+      'averageStreak': 0,
+      'totalCompletions': 0,
+    };
+    final trends = insights['completionTrends'] as List<dynamic>? ?? [];
+    final completion = trends.isEmpty ? 0.0 : (trends.last['completion'] as double? ?? 0.0);
+    
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      mainAxisSpacing: 16,
+      crossAxisSpacing: 16,
+      childAspectRatio: 1.5,
+      children: [
+        _buildStatCard(
+          "Best Streak",
+          "${streakData['currentStreak']} days",
+          Icons.local_fire_department,
+          Colors.orange,
+        ),
+        _buildStatCard(
+          "Average Streak",
+          "${streakData['averageStreak']} days",
+          Icons.analytics,
+          Colors.blue,
+        ),
+        _buildStatCard(
+          "Total Completions",
+          "${streakData['totalCompletions']}",
+          Icons.check_circle,
+          Colors.green,
+        ),
+        _buildStatCard(
+          "Success Rate",
+          "${(completion * 100).round()}%",
+          Icons.trending_up,
+          Colors.purple,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCategoryBreakdown(Map<String, double> categoryData) {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey.withOpacity(0.2)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Category Breakdown",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 200,
+              child: PieChart(
+                PieChartData(
+                  sections: categoryData.entries.map((e) => PieChartSectionData(
+                    value: e.value * 100,
+                    title: '${(e.value * 100).round()}%',
+                    color: _getCategoryColor(e.key),
+                    radius: 100,
+                    titleStyle: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  )).toList(),
+                  sectionsSpace: 2,
+                  centerSpaceRadius: 40,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ...categoryData.entries.map((e) => _buildCategoryLegendItem(
+              e.key,
+              e.value,
+              _getCategoryColor(e.key),
+            )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTrendAnalysis(List<Map<String, dynamic>> trends) {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey.withOpacity(0.2)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Completion Trends",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              height: 200,
+              child: LineChart(
+                LineChartData(
+                  gridData: FlGridData(show: false),
+                  titlesData: FlTitlesData(
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        interval: 0.2,
+                        getTitlesWidget: (value, meta) {
+                          return Text('${(value * 100).round()}%',
+                            style: const TextStyle(fontSize: 12));
+                        },
+                      ),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (value, meta) {
+                          if (value.toInt() >= trends.length) return const Text('');
+                          final date = trends[value.toInt()]['date'] as DateTime;
+                          return Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: Text(
+                              '${date.day}/${date.month}',
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: trends.asMap().entries.map((e) => 
+                        FlSpot(e.key.toDouble(), e.value['completion'])).toList(),
+                      isCurved: true,
+                      color: Colors.purple,
+                      barWidth: 3,
+                      isStrokeCapRound: true,
+                      dotData: FlDotData(show: true),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        color: Colors.purple.withOpacity(0.1),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -726,33 +904,29 @@ class _HabitspageState extends State<Habitspage> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildTimeDistributionCard(Map<String, double> timeDistribution) {
+  Widget _buildTimeDistributionCard(Map<String, double>? timeDistribution) {
+    final distribution = timeDistribution ?? {
+      'Morning': 0.0,
+      'Afternoon': 0.0,
+      'Evening': 0.0,
+    };
+    
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(color: Colors.grey.withOpacity(0.2)),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Time Distribution",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildTimeRow("Morning", timeDistribution['Morning']!, Colors.orange),
-            const SizedBox(height: 12),
-            _buildTimeRow("Afternoon", timeDistribution['Afternoon']!, Colors.blue),
-            const SizedBox(height: 12),
-            _buildTimeRow("Evening", timeDistribution['Evening']!, Colors.purple),
-          ],
-        ),
+      child: Column(
+        children: [
+          const Text("Time Distribution", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          _buildTimeRow("Morning", distribution['Morning']!, Colors.orange),
+          const SizedBox(height: 12),
+          _buildTimeRow("Afternoon", distribution['Afternoon']!, Colors.blue),
+          const SizedBox(height: 12),
+          _buildTimeRow("Evening", distribution['Evening']!, Colors.purple),
+        ],
       ),
     );
   }
@@ -777,6 +951,63 @@ class _HabitspageState extends State<Habitspage> with SingleTickerProviderStateM
           borderRadius: BorderRadius.circular(4),
         ),
       ],
+    );
+  }
+
+  Widget _buildCompletionCalendar() {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey.withOpacity(0.2)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: TableCalendar(
+          firstDay: DateTime.now().subtract(const Duration(days: 365)),
+          lastDay: DateTime.now(),
+          focusedDay: DateTime.now(),
+          calendarFormat: CalendarFormat.month,
+          headerStyle: const HeaderStyle(formatButtonVisible: false),
+          calendarStyle: CalendarStyle(
+            markerDecoration: BoxDecoration(
+              color: Colors.purple,
+              shape: BoxShape.circle,
+            ),
+          ),
+          eventLoader: (day) {
+            return widget.habits.where((h) {
+              if (h['lastCompleted'] == null) return false;
+              final completed = DateTime.parse(h['lastCompleted']);
+              return completed.year == day.year && 
+                     completed.month == day.month && 
+                     completed.day == day.day;
+            }).toList();
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryLegendItem(String category, double percentage, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Container(
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(category),
+          const Spacer(),
+          Text('${(percentage * 100).round()}%'),
+        ],
+      ),
     );
   }
 
