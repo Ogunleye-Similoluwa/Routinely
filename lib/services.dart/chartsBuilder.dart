@@ -232,18 +232,18 @@ class LineChartSample2 extends StatelessWidget {
     return ChartBase(
       isShowingMainData: true,
       title: 'Exercise',
-      color: Colors.deepPurpleAccent,
-      spots: const [
-        FlSpot(1, 86),
-        FlSpot(3, 78),
-        FlSpot(5, 75),
-        FlSpot(7, 63),
-        FlSpot(10, 74),
-        FlSpot(12, 85),
-        FlSpot(13, 92),
-      ],
-    );
-  }
+        color: Colors.deepPurpleAccent,
+        spots: const [
+          FlSpot(1, 86),
+          FlSpot(3, 78),
+          FlSpot(5, 75),
+          FlSpot(7, 63),
+          FlSpot(10, 74),
+          FlSpot(12, 85),
+          FlSpot(13, 92),
+        ],
+      );
+}
 }
 
 class LineChartSample3 extends StatelessWidget {
@@ -330,11 +330,11 @@ class HabitAnalytics extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+                const Text(
               'Today\'s Completion Rate',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 16),

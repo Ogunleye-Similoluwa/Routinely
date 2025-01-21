@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:habit_speed_code/pages/habitsPage.dart';
-import 'package:habit_speed_code/pages/profilePage.dart';
-import 'package:habit_speed_code/pages/progressPage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 import 'pages/homePage.dart';
 
@@ -36,14 +36,35 @@ class NavigationScreen extends StatefulWidget {
 
 class _NavigationScreenState extends State<NavigationScreen> {
   List<Map<String, dynamic>> habits = [];
+  late SharedPreferences prefs;
+
+  @override
+  void initState() {
+    super.initState();
+    _initPrefs();
+  }
+
+  Future<void> _initPrefs() async {
+    prefs = await SharedPreferences.getInstance();
+    _loadHabits();
+  }
+
+  Future<void> _loadHabits() async {
+    final storedHabits = prefs.getString('habits');
+    if (storedHabits != null) {
+      setState(() {
+        habits = List<Map<String, dynamic>>.from(
+          json.decode(storedHabits).map((x) => Map<String, dynamic>.from(x)),
+        );
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final screens = [
-      HomePage(),
-      // ProgressPage(habits: habits),
-      Habitspage(),
-      ProfilePage()
+      HomePage(habits: habits, onHabitsChanged: _loadHabits),
+      Habitspage(habits: habits, onHabitsChanged: _loadHabits),
     ];
 
     return Scaffold(
@@ -66,7 +87,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
           // BottomNavigationBarItem(
           //     icon: Icon(Icons.calendar_today), label: "Progress"),
           BottomNavigationBarItem(icon: Icon(Icons.timeline), label: "Habits"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile")
+          // BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile")
         ],
       ),
     );

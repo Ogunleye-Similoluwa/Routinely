@@ -47,9 +47,9 @@ class _ProgressPageState extends State<ProgressPage> {
                       "Hey ${_getGreeting()}!",
                       style: const TextStyle(
                         fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.bold,
                         color: Colors.white,
-                      ),
+                    ),
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -76,12 +76,12 @@ class _ProgressPageState extends State<ProgressPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
+        Padding(
                   padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
-                  child: Text(
+              child: Text(
                     "Top Performing Habits",
-                    style: TextStyle(
-                      color: Colors.grey[900],
+                style: TextStyle(
+                    color: Colors.grey[900],
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -152,7 +152,7 @@ class _ProgressPageState extends State<ProgressPage> {
               children: [
                 const Text(
                   'Weekly Progress',
-                  style: TextStyle(
+                style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.w600,

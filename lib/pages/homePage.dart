@@ -8,7 +8,14 @@ import '../services.dart/chartsBuilder.dart';
 import '../pages/progressPage.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  final List<Map<String, dynamic>> habits;
+  final VoidCallback onHabitsChanged;
+  
+  const HomePage({
+    Key? key, 
+    required this.habits, 
+    required this.onHabitsChanged
+  }) : super(key: key);
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -65,14 +72,14 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   Future<void> _showWelcomeDialog() async {
     return showDialog(
-      context: context,
+          context: context,
       barrierDismissible: false,
       builder: (context) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+                mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(Icons.waving_hand, size: 50, color: Colors.purple),
               const SizedBox(height: 16),
@@ -303,8 +310,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    setState(() {
+                    onPressed: () {
+                      setState(() {
                       habits[index] = {
                         ...habits[index],
                         'name': nameController.text,
@@ -317,9 +324,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             : null,
                       };
                       _saveHabits();
-                    });
-                    Navigator.pop(context);
-                  },
+                      });
+                      Navigator.pop(context);
+                    },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.purple,
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -439,9 +446,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
+                    Text(
                                       'Today\'s Progress',
-                                      style: TextStyle(
+                      style: TextStyle(
                                         color: Colors.white.withOpacity(0.8),
                                         fontSize: 14,
                                       ),
@@ -480,7 +487,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 24,
-                                      fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   Text(
@@ -617,11 +624,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           child: InkWell(
             onTap: () => _editHabit(index),
             borderRadius: BorderRadius.circular(16),
-            child: Padding(
+          child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Column(
+            child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+              children: [
                   Row(
                     children: [
                       CircleAvatar(
@@ -643,7 +650,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                     : null,
                               ),
                             ),
-                            Text(
+                      Text(
                               habit['description'],
                               style: TextStyle(
                                 color: Colors.grey[600],
@@ -844,7 +851,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 ),
               ),
               const Spacer(),
-              SizedBox(
+                SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
@@ -864,7 +871,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             : null,
                       };
                       
-                      setState(() {
+                              setState(() {
                         habits.add(newHabit);
                         _updateCompletedCount();
                       });
@@ -889,9 +896,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   ),
                 ),
               ),
-            ],
+              ],
+            ),
           ),
-        ),
       ),
     );
   }
