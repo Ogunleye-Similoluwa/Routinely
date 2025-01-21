@@ -15,7 +15,6 @@ Routinely is a modern, feature-rich habit tracking application built with Flutte
 ### Daily View & Tracking
 <div align="center">
   <div style="display: flex; align-items: flex-start;">
-
     <img src="screenshots/add_habit.png" width="250" alt="Add Habit"/>
   </div>
 </div>
@@ -23,8 +22,7 @@ Routinely is a modern, feature-rich habit tracking application built with Flutte
 ### Analytics & Insights
 <div align="center">
   <div style="display: flex; align-items: flex-start;">
-   
-    <img src="screenshots/calendar_view.png" width="250" alt="Calendar View"/>
+<img src="screenshots/calendar_view.png" width="250" alt="Calendar View"/>
    
   </div>
 </div>
