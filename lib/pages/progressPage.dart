@@ -21,98 +21,87 @@ class _ProgressPageState extends State<ProgressPage> {
     final topHabits = _getTopHabits();
     final needsImprovement = _getNeedsImprovement();
 
-    return Scaffold(
-      backgroundColor: Colors.grey[100],
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 200,
-            floating: false,
-            pinned: true,
-            elevation: 0,
-            backgroundColor: Colors.transparent,
-            flexibleSpace: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topRight,
-                  end: Alignment.bottomLeft,
-                  colors: [
-                    Colors.purple[700]!,
-                    Colors.deepPurple[800]!,
-                  ],
-                ),
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          Container(
+            height: 252,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topRight,
+                end: Alignment.bottomLeft,
+                colors: [
+                  Colors.purple[700]!,
+                  Colors.deepPurple[800]!,
+                ],
               ),
-              child: FlexibleSpaceBar(
-                background: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 20),
-                        Text(
-                          "Hey ${_getGreeting()}!",
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _getMotivationalMessage(),
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white.withOpacity(0.8),
-                          ),
-                        ),
-                        const Spacer(),
-                        _buildWeeklyOverview(),
-                      ],
+            ),
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // const SizedBox(height: 20),
+                    Text(
+                      "Hey ${_getGreeting()}!",
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _getMotivationalMessage(),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white.withOpacity(0.8),
+                      ),
+                    ),
+                    // const Spacer(),
+                    _buildWeeklyOverview(),
+                  ],
                 ),
               ),
             ),
           ),
-          SliverToBoxAdapter(
-            child: Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(
-                  top: Radius.circular(20),
+          Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+                  child: Text(
+                    "Top Performing Habits",
+                    style: TextStyle(
+                      color: Colors.grey[900],
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
-                    child: Text(
-                      "Top Performing Habits",
-                      style: TextStyle(
-                        color: Colors.grey[900],
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
+                _buildHabitList(topHabits, isTopPerforming: true),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+                  child: Text(
+                    "Needs Improvement",
+                    style: TextStyle(
+                      color: Colors.grey[900],
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  _buildHabitList(topHabits, isTopPerforming: true),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
-                    child: Text(
-                      "Needs Improvement",
-                      style: TextStyle(
-                        color: Colors.grey[900],
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  _buildHabitList(needsImprovement, isTopPerforming: false),
-                  const SizedBox(height: 24),
-                ],
-              ),
+                ),
+                _buildHabitList(needsImprovement, isTopPerforming: false),
+                const SizedBox(height: 24),
+              ],
             ),
           ),
         ],
@@ -124,33 +113,32 @@ class _ProgressPageState extends State<ProgressPage> {
     final completionRate = _calculateWeeklyCompletionRate();
     
     return Container(
-      padding: const EdgeInsets.all(16),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 1,
-        ),
       ),
       child: Row(
         children: [
-          SizedBox(
-            height: 60,
-            width: 60,
+          Container(
+            height: 48,
+            width: 48,
+            margin: const EdgeInsets.only(right: 16),
             child: Stack(
               children: [
                 CircularProgressIndicator(
                   value: completionRate,
                   backgroundColor: Colors.white.withOpacity(0.2),
                   valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                  strokeWidth: 8,
+                  strokeWidth: 4,
                 ),
                 Center(
                   child: Text(
                     '${(completionRate * 100).round()}%',
                     style: const TextStyle(
                       color: Colors.white,
+                      fontSize: 14,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -158,7 +146,6 @@ class _ProgressPageState extends State<ProgressPage> {
               ],
             ),
           ),
-          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,8 +154,8 @@ class _ProgressPageState extends State<ProgressPage> {
                   'Weekly Progress',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 4),
