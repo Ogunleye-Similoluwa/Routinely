@@ -361,64 +361,152 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           SliverAppBar(
             expandedHeight: 200,
-            floating: false,
+            floating: true,
             pinned: true,
+            backgroundColor: Colors.purple,
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Colors.purple, Colors.deepPurple],
+                    begin: Alignment.topRight,
+                    end: Alignment.bottomLeft,
+                    colors: [
+                      Colors.purple,
+                      Colors.deepPurple,
+                    ],
                   ),
                 ),
                 child: SafeArea(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Today's Progress",
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          SizedBox(
-                            height: 80,
-                            width: 80,
-                            child: CircularProgressIndicator(
-                              value: progress,
-                              backgroundColor: Colors.white24,
-                              strokeWidth: 8,
-                              valueColor: const AlwaysStoppedAnimation<Color>(
-                                Colors.white,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Hello!',
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.8),
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const Text(
+                                  'Let\'s crush your goals',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            CircleAvatar(
+                              radius: 24,
+                              backgroundColor: Colors.white.withOpacity(0.2),
+                              child: Icon(
+                                Icons.person_outline,
+                                color: Colors.white,
+                                size: 28,
                               ),
                             ),
+                          ],
+                        ),
+                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                          Text(
-                            '${(progress * 100).round()}%',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Today\'s Progress',
+                                      style: TextStyle(
+                                        color: Colors.white.withOpacity(0.8),
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: LinearProgressIndicator(
+                                        value: progress,
+                                        backgroundColor: Colors.white.withOpacity(0.2),
+                                        valueColor: const AlwaysStoppedAnimation<Color>(
+                                          Colors.white,
+                                        ),
+                                        minHeight: 8,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    '${(progress * 100).round()}%',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    '$completedHabits/${habits.length} completed',
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.8),
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
             bottom: TabBar(
               controller: _tabController,
+              indicatorColor: Colors.white,
+              indicatorWeight: 3,
               tabs: const [
-                Tab(text: 'Habits'),
-                Tab(text: 'Analytics'),
+                Tab(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.check_circle_outline),
+                      SizedBox(width: 8),
+                      Text('Habits'),
+                    ],
+                  ),
+                ),
+                Tab(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.analytics_outlined),
+                      SizedBox(width: 8),
+                      Text('Analytics'),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -431,10 +519,14 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _addHabit(context),
         backgroundColor: Colors.purple,
-        child: const Icon(Icons.add, color: Colors.white),
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: const Text(
+          'New Habit',
+          style: TextStyle(color: Colors.white),
+        ),
       ),
     );
   }
@@ -621,7 +713,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => StatefulBuilder(
-        builder: (context, setState) => Container(
+        builder: (context, setModalState) => Container(
           height: MediaQuery.of(context).size.height * 0.85,
           decoration: const BoxDecoration(
             color: Colors.white,
@@ -676,7 +768,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         ))
                     .toList(),
                 onChanged: (value) {
-                  setState(() => selectedCategory = value!);
+                  setModalState(() => selectedCategory = value!);
                 },
               ),
               const SizedBox(height: 16),
@@ -695,7 +787,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         ))
                     .toList(),
                 onChanged: (value) {
-                  setState(() => priority = value!);
+                  setModalState(() => priority = value!);
                 },
               ),
               const SizedBox(height: 16),
@@ -710,7 +802,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       initialTime: TimeOfDay.now(),
                     );
                     if (time != null) {
-                      setState(() => reminderTime = time);
+                      setModalState(() => reminderTime = time);
                     }
                   },
                 ),
@@ -721,7 +813,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 child: ElevatedButton(
                   onPressed: () {
                     if (nameController.text.isNotEmpty) {
-                      setState(() {
+                      setModalState(() {
                         habits.add({
                           'completed': false,
                           'name': nameController.text,
@@ -736,8 +828,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                   .toIso8601String()
                               : null,
                         });
-                        _saveHabits();
                       });
+                      _saveHabits();
+                      _updateCompletedCount();
                       Navigator.pop(context);
                     }
                   },
