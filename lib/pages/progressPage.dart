@@ -1,11 +1,15 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 import '../services.dart/lists.dart';
 
 class ProgressPage extends StatefulWidget {
-  const ProgressPage({Key? key}) : super(key: key);
+  final List<Map<String, dynamic>> habits;
+  
+  const ProgressPage({Key? key, required this.habits}) : super(key: key);
 
   @override
   State<ProgressPage> createState() => _ProgressPageState();
@@ -14,235 +18,303 @@ class ProgressPage extends StatefulWidget {
 class _ProgressPageState extends State<ProgressPage> {
   @override
   Widget build(BuildContext context) {
+    final topHabits = _getTopHabits();
+    final needsImprovement = _getNeedsImprovement();
+
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      body: ListView(padding: EdgeInsets.zero, children: [
-        Padding(
-          padding: EdgeInsets.fromLTRB(0, 0, 0, 20),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(30),
-            child: Stack(children: [
-              Image.asset('assets/progressPageBackground.png'),
-              Padding(
-                padding: EdgeInsets.fromLTRB(20, 140, 0, 20),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Column(children: const [
-                    Text(
-                      "Hey Hermano!",
-                      style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white),
-                    ),
-                    SizedBox(
-                      height: 5,
-                    ),
-                    Text(
-                      "Keep going champ!",
-                      style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          color: Colors.white),
-                    ),
-                  ]),
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 200,
+            floating: false,
+            pinned: true,
+            elevation: 0,
+            backgroundColor: Colors.transparent,
+            flexibleSpace: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topRight,
+                  end: Alignment.bottomLeft,
+                  colors: [
+                    Colors.purple[700]!,
+                    Colors.deepPurple[800]!,
+                  ],
                 ),
-              )
-            ]),
+              ),
+              child: FlexibleSpaceBar(
+                background: SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 20),
+                        Text(
+                          "Hey ${_getGreeting()}!",
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _getMotivationalMessage(),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white.withOpacity(0.8),
+                          ),
+                        ),
+                        const Spacer(),
+                        _buildWeeklyOverview(),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
-        ),
-        Padding(
-          padding: EdgeInsets.fromLTRB(15, 5, 15, 5),
-          child: Container(
-            width: MediaQuery.of(context).size.width * 0.8,
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30), color: Colors.white),
-            // ignore: prefer_const_literals_to_create_immutables
+          SliverToBoxAdapter(
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(20),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+                    child: Text(
+                      "Top Performing Habits",
+                      style: TextStyle(
+                        color: Colors.grey[900],
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  _buildHabitList(topHabits, isTopPerforming: true),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+                    child: Text(
+                      "Needs Improvement",
+                      style: TextStyle(
+                        color: Colors.grey[900],
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  _buildHabitList(needsImprovement, isTopPerforming: false),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
           ),
-        ),
-        Padding(
-          padding: EdgeInsets.fromLTRB(20, 10, 15, 10),
-          child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Top Habits This Week",
-                style: TextStyle(
-                    color: Colors.grey[900],
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600),
-              )),
-        ),
-        Padding(
-          padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
-          child: Container(
-            width: MediaQuery.of(context).size.width * 0.9,
-            decoration: BoxDecoration(
-                color: Colors.white, borderRadius: BorderRadius.circular(30)),
-
-            // ignore: prefer_const_literals_to_create_immutables
-            child: Column(children: [
-              ListTile(
-                  leading: CircularProgressIndicator(
-                    color: Colors.deepPurpleAccent,
-                    strokeWidth: 7.5,
-                    backgroundColor: Color.fromARGB(255, 192, 170, 250),
-                    value: 1,
-                  ),
-                  title: Text(
-                    "Drinking Water",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    "How good you've been at drinking water this week",
-                    style: TextStyle(fontStyle: FontStyle.italic, fontSize: 12),
-                  ),
-                  trailing: Icon(Icons.local_drink)),
-              Divider(),
-              ListTile(
-                  leading: CircularProgressIndicator(
-                    color: Colors.deepPurpleAccent,
-                    strokeWidth: 7.5,
-                    backgroundColor: Color.fromARGB(255, 192, 170, 250),
-                    value: 0.95,
-                  ),
-                  title: Text(
-                    "Reading",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    "How good you've been at reading  this week",
-                    style: TextStyle(fontStyle: FontStyle.italic, fontSize: 12),
-                  ),
-                  trailing: Icon(Icons.book)),
-              Divider(),
-              ListTile(
-                  leading: CircularProgressIndicator(
-                    color: Colors.deepPurpleAccent,
-                    strokeWidth: 7.5,
-                    backgroundColor: Color.fromARGB(255, 192, 170, 250),
-                    value: 0.8,
-                  ),
-                  title: Text(
-                    "Exercising",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    "How good you've been at exercising this week",
-                    style: TextStyle(fontStyle: FontStyle.italic, fontSize: 12),
-                  ),
-                  trailing: Icon(Icons.sports_gymnastics)),
-              Divider(),
-              ListTile(
-                  leading: CircularProgressIndicator(
-                    color: Colors.deepPurpleAccent,
-                    strokeWidth: 7.5,
-                    backgroundColor: Color.fromARGB(255, 192, 170, 250),
-                    value: 0.65,
-                  ),
-                  title: Text(
-                    "Studying Spanish",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    "How good you've been at Studying Spanish this week",
-                    style: TextStyle(fontStyle: FontStyle.italic, fontSize: 12),
-                  ),
-                  trailing: Icon(Icons.language)),
-            ]),
-          ),
-        ),
-        Padding(
-          padding: EdgeInsets.fromLTRB(20, 25, 15, 10),
-          child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Worst Habits This Week",
-                style: TextStyle(
-                    color: Colors.grey[900],
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600),
-              )),
-        ),
-        Padding(
-          padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
-          child: Container(
-            width: MediaQuery.of(context).size.width * 0.9,
-            decoration: BoxDecoration(
-                color: Colors.white, borderRadius: BorderRadius.circular(30)),
-
-            // ignore: prefer_const_literals_to_create_immutables
-            child: Column(children: [
-              ListTile(
-                  leading: CircularProgressIndicator(
-                    color: Colors.deepPurpleAccent,
-                    strokeWidth: 7.5,
-                    backgroundColor: Color.fromARGB(255, 192, 170, 250),
-                    value: 0.12,
-                  ),
-                  title: Text(
-                    "Coding",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    "How bad you've been at coding this week",
-                    style: TextStyle(fontStyle: FontStyle.italic, fontSize: 12),
-                  ),
-                  trailing: Icon(Icons.computer)),
-              Divider(),
-              ListTile(
-                  leading: CircularProgressIndicator(
-                    color: Colors.deepPurpleAccent,
-                    strokeWidth: 7.5,
-                    backgroundColor: Color.fromARGB(255, 192, 170, 250),
-                    value: 0.25,
-                  ),
-                  title: Text(
-                    "Journaling",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    "How bad you've been at journaling this week",
-                    style: TextStyle(fontStyle: FontStyle.italic, fontSize: 12),
-                  ),
-                  trailing: Icon(Icons.edit)),
-              Divider(),
-              ListTile(
-                  leading: CircularProgressIndicator(
-                    color: Colors.deepPurpleAccent,
-                    strokeWidth: 7.5,
-                    backgroundColor: Color.fromARGB(255, 192, 170, 250),
-                    value: 0.33,
-                  ),
-                  title: Text(
-                    "Cleaning",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    "How bad you've been at cleaning this week",
-                    style: TextStyle(fontStyle: FontStyle.italic, fontSize: 12),
-                  ),
-                  trailing: Icon(Icons.cleaning_services_outlined)),
-              Divider(),
-              ListTile(
-                  leading: CircularProgressIndicator(
-                    color: Colors.deepPurpleAccent,
-                    strokeWidth: 7.5,
-                    backgroundColor: Color.fromARGB(255, 192, 170, 250),
-                    value: 0.33,
-                  ),
-                  title: Text(
-                    "Waking Up Early",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    "How bad you've been at waking up early this week",
-                    style: TextStyle(fontStyle: FontStyle.italic, fontSize: 12),
-                  ),
-                  trailing: Icon(Icons.language)),
-            ]),
-          ),
-        )
-      ]),
+        ],
+      ),
     );
+  }
+
+  Widget _buildWeeklyOverview() {
+    final completionRate = _calculateWeeklyCompletionRate();
+    
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            height: 60,
+            width: 60,
+            child: Stack(
+              children: [
+                CircularProgressIndicator(
+                  value: completionRate,
+                  backgroundColor: Colors.white.withOpacity(0.2),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                  strokeWidth: 8,
+                ),
+                Center(
+                  child: Text(
+                    '${(completionRate * 100).round()}%',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Weekly Progress',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _getWeeklyStats(),
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.8),
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHabitList(List<Map<String, dynamic>> habits, {required bool isTopPerforming}) {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: habits.length,
+      itemBuilder: (context, index) {
+        final habit = habits[index];
+        final progress = _calculateHabitProgress(habit);
+        
+        return Card(
+          elevation: 0,
+          margin: const EdgeInsets.only(bottom: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(
+              color: Colors.grey.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                SizedBox(
+                  height: 50,
+                  width: 50,
+                  child: CircularProgressIndicator(
+                    value: progress,
+                    backgroundColor: Colors.purple.withOpacity(0.1),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      isTopPerforming ? Colors.green : Colors.orange,
+                    ),
+                    strokeWidth: 8,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        habit['name'],
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _getHabitStats(habit),
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  _getHabitIcon(habit),
+                  color: isTopPerforming ? Colors.green : Colors.orange,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
+  }
+
+  String _getMotivationalMessage() {
+    final completionRate = _calculateWeeklyCompletionRate();
+    if (completionRate >= 0.8) return "You're crushing it! 🔥";
+    if (completionRate >= 0.5) return "Keep up the good work! 💪";
+    return "Small steps lead to big changes! 🌱";
+  }
+
+  double _calculateWeeklyCompletionRate() {
+    if (widget.habits.isEmpty) return 0.0;
+    final completedCount = widget.habits.where((h) => h['completed']).length;
+    return completedCount / widget.habits.length;
+  }
+
+  String _getWeeklyStats() {
+    final completedCount = widget.habits.where((h) => h['completed']).length;
+    return '$completedCount/${widget.habits.length} habits completed this week';
+  }
+
+  List<Map<String, dynamic>> _getTopHabits() {
+    final sortedHabits = [...widget.habits]..sort((a, b) => 
+        (b['streak'] as int? ?? 0).compareTo(a['streak'] as int? ?? 0));
+    return sortedHabits.take(3).toList();
+  }
+
+  List<Map<String, dynamic>> _getNeedsImprovement() {
+    final sortedHabits = [...widget.habits]..sort((a, b) => 
+        (a['streak'] as int? ?? 0).compareTo(b['streak'] as int? ?? 0));
+    return sortedHabits.take(3).toList();
+  }
+
+  double _calculateHabitProgress(Map<String, dynamic> habit) {
+    final streak = habit['streak'] as int? ?? 0;
+    return streak / 7; // Progress relative to a week
+  }
+
+  String _getHabitStats(Map<String, dynamic> habit) {
+    final streak = habit['streak'] as int? ?? 0;
+    return '$streak day streak';
+  }
+
+  IconData _getHabitIcon(Map<String, dynamic> habit) {
+    switch (habit['category']) {
+      case 'Health':
+        return Icons.favorite;
+      case 'Learning':
+        return Icons.school;
+      case 'Work':
+        return Icons.work;
+      default:
+        return Icons.star;
+    }
   }
 }

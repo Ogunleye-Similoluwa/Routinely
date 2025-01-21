@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../services.dart/lists.dart';
 import '../services.dart/chartsBuilder.dart';
+import '../pages/progressPage.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -363,20 +364,21 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             expandedHeight: 200,
             floating: true,
             pinned: true,
-            backgroundColor: Colors.purple,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topRight,
-                    end: Alignment.bottomLeft,
-                    colors: [
-                      Colors.purple,
-                      Colors.deepPurple,
-                    ],
-                  ),
+            elevation: 0,
+            backgroundColor: Colors.transparent,
+            flexibleSpace: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topRight,
+                  end: Alignment.bottomLeft,
+                  colors: [
+                    Colors.purple[700]!,
+                    Colors.deepPurple[800]!,
+                  ],
                 ),
-                child: SafeArea(
+              ),
+              child: FlexibleSpaceBar(
+                background: SafeArea(
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
@@ -406,10 +408,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                 ),
                               ],
                             ),
-                            CircleAvatar(
-                              radius: 24,
-                              backgroundColor: Colors.white.withOpacity(0.2),
-                              child: Icon(
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
                                 Icons.person_outline,
                                 color: Colors.white,
                                 size: 28,
@@ -423,6 +428,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.2),
+                              width: 1,
+                            ),
                           ),
                           child: Row(
                             children: [
@@ -438,16 +447,26 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                       ),
                                     ),
                                     const SizedBox(height: 8),
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: LinearProgressIndicator(
-                                        value: progress,
-                                        backgroundColor: Colors.white.withOpacity(0.2),
-                                        valueColor: const AlwaysStoppedAnimation<Color>(
-                                          Colors.white,
+                                    Stack(
+                                      children: [
+                                        Container(
+                                          height: 8,
+                                          decoration: BoxDecoration(
+                                            color: Colors.white.withOpacity(0.2),
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
                                         ),
-                                        minHeight: 8,
-                                      ),
+                                        FractionallySizedBox(
+                                          widthFactor: progress,
+                                          child: Container(
+                                            height: 8,
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.circular(4),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
@@ -482,46 +501,63 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 ),
               ),
             ),
-            bottom: TabBar(
-              controller: _tabController,
-              indicatorColor: Colors.white,
-              indicatorWeight: 3,
-              tabs: const [
-                Tab(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.check_circle_outline),
-                      SizedBox(width: 8),
-                      Text('Habits'),
-                    ],
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(kToolbarHeight),
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(20),
                   ),
                 ),
-                Tab(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.analytics_outlined),
-                      SizedBox(width: 8),
-                      Text('Analytics'),
-                    ],
-                  ),
+                child: TabBar(
+                  controller: _tabController,
+                  indicatorSize: TabBarIndicatorSize.label,
+                  indicatorColor: Colors.purple,
+                  labelColor: Colors.purple,
+                  unselectedLabelColor: Colors.grey,
+                  tabs: const [
+                    Tab(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.check_circle_outline),
+                          SizedBox(width: 8),
+                          Text('Habits'),
+                        ],
+                      ),
+                    ),
+                    Tab(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.analytics_outlined),
+                          SizedBox(width: 8),
+                          Text('Analytics'),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ],
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildHabitsList(),
-            _buildAnalytics(),
-          ],
+        body: Container(
+          color: Colors.white,
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildHabitsList(),
+              ProgressPage(habits: habits),
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _addHabit(context),
-        backgroundColor: Colors.purple,
+        backgroundColor: Colors.purple[700],
+        elevation: 4,
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text(
           'New Habit',
@@ -813,24 +849,27 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 child: ElevatedButton(
                   onPressed: () {
                     if (nameController.text.isNotEmpty) {
-                      setModalState(() {
-                        habits.add({
-                          'completed': false,
-                          'name': nameController.text,
-                          'description': descController.text,
-                          'icon': Icons.star.toString(),
-                          'streak': 0,
-                          'lastCompleted': null,
-                          'category': selectedCategory,
-                          'priority': priority,
-                          'reminderTime': reminderTime != null 
-                              ? DateTime(2024, 1, 1, reminderTime!.hour, reminderTime!.minute)
-                                  .toIso8601String()
-                              : null,
-                        });
+                      final newHabit = {
+                        'completed': false,
+                        'name': nameController.text,
+                        'description': descController.text,
+                        'icon': Icons.star.toString(),
+                        'streak': 0,
+                        'lastCompleted': null,
+                        'category': selectedCategory,
+                        'priority': priority,
+                        'reminderTime': reminderTime != null 
+                            ? DateTime(2024, 1, 1, reminderTime!.hour, reminderTime!.minute)
+                                .toIso8601String()
+                            : null,
+                      };
+                      
+                      setState(() {
+                        habits.add(newHabit);
+                        _updateCompletedCount();
                       });
+                      
                       _saveHabits();
-                      _updateCompletedCount();
                       Navigator.pop(context);
                     }
                   },

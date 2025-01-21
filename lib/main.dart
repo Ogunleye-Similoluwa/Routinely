@@ -1,4 +1,4 @@
- import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:habit_speed_code/pages/habitsPage.dart';
 import 'package:habit_speed_code/pages/profilePage.dart';
 import 'package:habit_speed_code/pages/progressPage.dart';
@@ -34,16 +34,18 @@ class NavigationScreen extends StatefulWidget {
   State<NavigationScreen> createState() => _NavigationScreenState();
 }
 
-const List<Widget> screens = [
-  HomePage(),
-  ProgressPage(),
-  Habitspage(),
-  ProfilePage()
-];
-
 class _NavigationScreenState extends State<NavigationScreen> {
+  List<Map<String, dynamic>> habits = [];
+
   @override
   Widget build(BuildContext context) {
+    final screens = [
+      HomePage(),
+      // ProgressPage(habits: habits),
+      Habitspage(),
+      ProfilePage()
+    ];
+
     return Scaffold(
       body: IndexedStack(
         index: widget.currentIndex,
@@ -61,8 +63,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_today), label: "Progress"),
+          // BottomNavigationBarItem(
+          //     icon: Icon(Icons.calendar_today), label: "Progress"),
           BottomNavigationBarItem(icon: Icon(Icons.timeline), label: "Habits"),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile")
         ],
